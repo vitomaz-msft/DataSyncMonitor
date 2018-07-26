@@ -1,0 +1,33 @@
+{
+  "bindings": [
+    {
+      "type": "timerTrigger",
+      "name": "myTimer",
+      "schedule": "0 0 * * * *",
+      "direction": "in"
+    },
+    {
+      "type": "sendGrid",
+      "name": "$return",
+      "direction": "out",
+      "apiKey": "SendGridAPIKey",
+      "from": "Data Sync Failure Monitor <functions@azure.com>",
+      "to": "user@company.com"
+    },
+    {
+      "type": "blob",
+      "name": "myInputBlob",
+      "path": "datasyncalerts/lastCheck",
+      "connection": "AzureWebJobsStorage",
+      "direction": "in"
+    },
+    {
+      "type": "blob",
+      "name": "myOutputBlob",
+      "path": "datasyncalerts/lastCheck",
+      "connection": "AzureWebJobsDashboard",
+      "direction": "out"
+    }
+  ],
+  "disabled": false
+}
