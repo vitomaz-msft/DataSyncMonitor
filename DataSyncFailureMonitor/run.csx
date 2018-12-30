@@ -33,12 +33,12 @@ public static SendGridMessage Run(TimerInfo myTimer, string myInputBlob, out str
     SqlParameter lastCheckParameter = cmd.Parameters.Add("@lastCheck", System.Data.SqlDbType.DateTime);
     lastCheckParameter.Value = lastCheck;
     SqlDataReader rdr = null;
+    StringBuilder sb = new StringBuilder();
 
     try
     {
         conn.Open();
-        rdr = cmd.ExecuteReader();
-        StringBuilder sb = new StringBuilder();
+        rdr = cmd.ExecuteReader();        
 
         while (rdr.Read())
         {

@@ -27,17 +27,17 @@ public static SendGridMessage Run(TimerInfo myTimer, string myInputBlob, out str
     };
     log.LogInformation($"lastCheck: {lastCheck}");
     myOutputBlob = lastCheck.ToString();
+    
+    SqlConnection conn = new SqlConnection(string.Format("Server=tcp:{0}.database.windows.net,1433;Initial Catalog={1};Persist Security Info=False;User ID={2};Password={3};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;", SyncDbServer, SyncDbDatabase, SyncDbUser, SyncDbPassword));
+    SqlCommand cmd = new SqlCommand("SELECT [name] FROM [dss].[agent] WHERE [lastalivetime] < dateadd(minute, -15, GETDATE())", conn);
+    SqlDataReader rdr = null;
+    StringBuilder sb = new StringBuilder();
 
     try
     {
-        SqlConnection conn = new SqlConnection(string.Format("Server=tcp:{0}.database.windows.net,1433;Initial Catalog={1};Persist Security Info=False;User ID={2};Password={3};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;", SyncDbServer, SyncDbDatabase, SyncDbUser, SyncDbPassword));
-        SqlDataReader rdr = null;
-
         conn.Open();
         rdr = cmd.ExecuteReader();
-        StringBuilder sb = new StringBuilder();
-        cmd = new SqlCommand("SELECT [name] FROM [dss].[agent] WHERE [lastalivetime] < dateadd(minute, -15, GETDATE())", conn);
-        rdr = cmd.ExecuteReader();
+        
         while (rdr.Read())
         {
             string AgentName = rdr.IsDBNull(0) ? "" : rdr.GetString(0);
