@@ -14,7 +14,7 @@ public static SendGridMessage Run(TimerInfo myTimer, string myInputBlob, out str
     bool alert_SyncFailure = true;
     bool alert_CleanupTombstoneFailure = true;
     
-    string SyncDbServer = ConfigurationManager.AppSettings["SyncDbServer"];
+    string SyncDbServer = Environment.GetEnvironmentVariable("SyncDbServer");
     string SyncDbDatabase = ConfigurationManager.AppSettings["SyncDbDatabase"];
     string SyncDbUser = ConfigurationManager.AppSettings["SyncDbUser"];
     string SyncDbPassword = ConfigurationManager.AppSettings["SyncDbPassword"];
