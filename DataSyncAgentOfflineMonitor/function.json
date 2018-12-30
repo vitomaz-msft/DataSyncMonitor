@@ -11,19 +11,19 @@
       "name": "$return",
       "direction": "out",
       "apiKey": "SendGridAPIKey",
-      "from": "Data Sync Failure Monitor <functions@azure.com>",
+      "from": "Data Sync Failure Monitor <functions@azure.com>"
     },
     {
       "type": "blob",
       "name": "myInputBlob",
-      "path": "DataSyncAgentOfflineMonitor/lastCheck",
+      "path": "datasyncagentofflinemonitor/lastCheck",
       "connection": "AzureWebJobsStorage",
       "direction": "in"
     },
     {
       "type": "blob",
       "name": "myOutputBlob",
-      "path": "DataSyncAgentOfflineMonitor/lastCheck",
+      "path": "datasyncagentofflinemonitor/lastCheck",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
     }

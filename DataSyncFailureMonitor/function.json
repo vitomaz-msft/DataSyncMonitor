@@ -16,14 +16,14 @@
     {
       "type": "blob",
       "name": "myInputBlob",
-      "path": "DataSyncFailureMonitor/lastCheck",
+      "path": "datasyncfailuremonitor/lastCheck",
       "connection": "AzureWebJobsStorage",
       "direction": "in"
     },
     {
       "type": "blob",
       "name": "myOutputBlob",
-      "path": "DataSyncFailureMonitor/lastCheck",
+      "path": "datasyncfailuremonitor/lastCheck",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
     }
