@@ -7,29 +7,29 @@ using System.Data.SqlClient;
 using SendGrid.Helpers.Mail;
 using Microsoft.Azure.WebJobs.Host;
 
-public static Mail Run(TimerInfo myTimer, string myInputBlob, out string myOutputBlob, TraceWriter log)
+public static SendGridMessage Run(TimerInfo myTimer, string myInputBlob, out string myOutputBlob, ILogger log)
 {
     //Parameters
     bool alert_SyncFailure = true;
     bool alert_CleanupTombstoneFailure = true;
     
-    string SyncDbServer = "";
-    string SyncDbDatabase = "";
-    string SyncDbUser = "";
-    string SyncDbPassword = "";
+    string SyncDbServer = ConfigurationManager.AppSettings["SyncDbServer"];
+    string SyncDbDatabase = ConfigurationManager.AppSettings["SyncDbDatabase"];
+    string SyncDbUser = ConfigurationManager.AppSettings["SyncDbUser"];
+    string SyncDbPassword = ConfigurationManager.AppSettings["SyncDbPassword"];
 
     string dateTimeFormat = "yyyy-MM-dd HH:mm";
 
-    Mail message = null;
+    SendGridMessage message = null;
 
     //Get last check datetime
     DateTime lastCheck;
     if (!DateTime.TryParse(myInputBlob, out lastCheck))
     {
-        log.Info($"Was not possible to parse myInputBlob");
+        log.LogInformation($"Was not possible to parse myInputBlob");
         lastCheck = DateTime.UtcNow.AddHours(-1);
     };
-    log.Info($"lastCheck: {lastCheck}");
+    log.LogInformation($"lastCheck: {lastCheck}");
     myOutputBlob = lastCheck.ToString();
 
     SqlConnection conn = new SqlConnection(string.Format("Server=tcp:{0}.database.windows.net,1433;Initial Catalog={1};Persist Security Info=False;User ID={2};Password={3};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;", SyncDbServer, SyncDbDatabase, SyncDbUser, SyncDbPassword));
@@ -58,18 +58,13 @@ public static Mail Run(TimerInfo myTimer, string myInputBlob, out string myOutpu
             var endIndex = Details.IndexOf("</string>");
             Details = Details.Substring(0, endIndex);
 
-            switch (State)
-            {
-                case "SyncFailure":
-                    if (!alert_SyncFailure) continue;
-                    sb.AppendLine($"<tr><th style='background-color: #E74C3C;'>{State}</th></tr>");
-                    break;
-                case "CleanupTombstoneFailure":
-                    if (!alert_CleanupTombstoneFailure) continue;
+            if(State == "SyncFailure"){
+                sb.AppendLine($"<tr><th style='background-color: #E74C3C;'>{State}</th></tr>");
+            }
+            else{
+                if(State.Contains("Failure")){
                     sb.AppendLine($"<tr><th style='background-color: #F39C12;'>{State}</th></tr>");
-                    break;
-                default:
-                    continue;
+                }
             }
 
             sb.AppendLine($"<tr><td><b>Sync Group:</b> {SyncGroup}</td></tr>");
@@ -79,7 +74,18 @@ public static Mail Run(TimerInfo myTimer, string myInputBlob, out string myOutpu
             sb.AppendLine($"<tr><td><b>Details:</b> {Details}</td></tr>");
         }
 
-        log.Info($"sb.Length: {sb.Length}");
+        rdr.Close();
+        rdr.Dispose();
+        cmd = new SqlCommand("SELECT [name] FROM [dss].[agent] WHERE [lastalivetime] < dateadd(minute, -15, GETDATE())", conn);
+        rdr = cmd.ExecuteReader();
+        while (rdr.Read())
+        {
+            string AgentName = rdr.IsDBNull(0) ? "" : rdr.GetString(0);
+            sb.AppendLine($"<tr><th style='background-color: #E74C3C;'>Agent {AgentName} is offline</th></tr>");            
+        }
+
+        log.LogInformation($"sb.Length: {sb.Length}");
+        log.LogInformation($"sb.ToString: {sb.ToString()}");
         if (sb.Length > 0)
         {
             StringBuilder emailContentSB = new StringBuilder();
@@ -96,15 +102,14 @@ th { color: white;}
             emailContentSB.Append(sb.ToString());
             emailContentSB.Append(@"</table></div>");
 
-            message = new Mail() { Subject = "Data Sync failure alert" };
-            Content content = new Content { Type = "text/html", Value = emailContentSB.ToString() };
-            message.AddContent(content);
+            message = new SendGridMessage() { Subject = "Data Sync failure alert" };
+            message.AddContent("text/html", emailContentSB.ToString());
             myOutputBlob = DateTime.UtcNow.ToString();
         }
     }
     catch (Exception ex)
     {
-        log.Error($"Exception: {ex.Message}");
+        log.LogError($"Exception: {ex.Message}");
     }
     finally
     {
