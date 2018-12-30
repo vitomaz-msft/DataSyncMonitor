@@ -18,7 +18,9 @@ public static SendGridMessage Run(TimerInfo myTimer, string myInputBlob, out str
     string SyncDbDatabase = ConfigurationManager.AppSettings["SyncDbDatabase"];
     string SyncDbUser = ConfigurationManager.AppSettings["SyncDbUser"];
     string SyncDbPassword = ConfigurationManager.AppSettings["SyncDbPassword"];
-
+    log.LogInformation(SyncDbServer);
+    log.LogInformation(SyncDbDatabase);
+    log.LogInformation(SyncDbUser);
     string dateTimeFormat = "yyyy-MM-dd HH:mm";
 
     SendGridMessage message = null;
