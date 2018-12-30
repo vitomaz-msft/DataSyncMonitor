@@ -2,10 +2,11 @@
 #r "System.Data"
 
 using System;
-using System.Text;
+using System.Configuration;
 using System.Data.SqlClient;
-using SendGrid.Helpers.Mail;
+using System.Text;
 using Microsoft.Azure.WebJobs.Host;
+using SendGrid.Helpers.Mail;
 
 public static SendGridMessage Run(TimerInfo myTimer, string myInputBlob, out string myOutputBlob, ILogger log)
 {
